@@ -23,6 +23,7 @@ public class SecondFragment extends Fragment {
     private FragmentSecondBinding binding;
 
     private AudioRecord myAudioRecorder;
+    private AudioProcessingThread audioProcessingThread = new AudioProcessingThread();
 
     @Override
     public View onCreateView(
@@ -64,6 +65,9 @@ public class SecondFragment extends Fragment {
             e.printStackTrace();
         }
 
+        Toast.makeText(getActivity().getApplicationContext(), "Recording Started",
+                Toast.LENGTH_LONG).show();
+
     }
 
     @Override
@@ -80,6 +84,17 @@ public class SecondFragment extends Fragment {
 
         Toast.makeText(getActivity().getApplicationContext(), "Recording Stopped",
                 Toast.LENGTH_LONG).show();
+    }
+
+    class AudioProcessingThread implements Runnable {
+        @Override
+        public void run() {
+            byte[] audioData = new byte[1024];
+
+            while (myAudioRecorder.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING) {
+                myAudioRecorder.read(audioData, 0 , 1024);
+            }
+        }
     }
 
 }
