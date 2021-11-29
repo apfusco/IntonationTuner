@@ -1,11 +1,14 @@
 package ece.wisc.intonationtuner;
 
+import static ece.wisc.intonationtuner.MainActivity.flwt;
+
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -93,6 +96,8 @@ public class SecondFragment extends Fragment {
 
             while (myAudioRecorder.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING) {
                 myAudioRecorder.read(audioData, 0 , 1024);
+                flwt();
+                SystemClock.sleep(500);
             }
         }
     }

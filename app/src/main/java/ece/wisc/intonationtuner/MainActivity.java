@@ -18,7 +18,14 @@ import ece.wisc.intonationtuner.databinding.ActivityMainBinding;
 import android.view.Menu;
 import android.view.MenuItem;
 
+
+
 public class MainActivity extends AppCompatActivity {
+
+    static {
+        System.loadLibrary("intonationtuner");
+    }
+    native static int flwt();
 
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
