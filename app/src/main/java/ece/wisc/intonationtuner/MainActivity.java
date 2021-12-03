@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
     static {
         System.loadLibrary("intonationtuner");
     }
-    native static int flwt();
+    native static int flwt(byte[] audioData);
 
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
