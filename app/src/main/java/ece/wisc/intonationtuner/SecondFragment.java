@@ -65,7 +65,7 @@ public class SecondFragment extends Fragment {
             ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.RECORD_AUDIO}, 1);
         }
 
-        myAudioRecorder = new AudioRecord(MediaRecorder.AudioSource.MIC, 45000, AudioFormat.CHANNEL_IN_MONO,AudioFormat.ENCODING_PCM_16BIT, 1024);
+        myAudioRecorder = new AudioRecord(MediaRecorder.AudioSource.MIC, 45000, AudioFormat.CHANNEL_IN_MONO,AudioFormat.ENCODING_PCM_FLOAT, 1024);
 
         try {
             // TODO
@@ -121,16 +121,15 @@ public class SecondFragment extends Fragment {
     class AudioProcessingThread implements Runnable {
         @Override
         public void run() {
-            byte[] audioData = new byte[1024];
+            float[] audioData = new float[1024];
 
             Log.e("TEST", "Test");
 
             while (myAudioRecorder.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING) {
-                myAudioRecorder.read(audioData, 0 , 1024);
-                int a = flwt(audioData);
-                Log.e("TEST", "Test" + Integer.toString(a));
-                //System.out.println("Test" + Integer.toString(a));
-                SystemClock.sleep(500);
+                myAudioRecorder.read(audioData, 0 , 1024, AudioRecord.READ_BLOCKING);
+                float pitch = flwt(audioData);
+                Log.e("TEST", "Pitch: " + Float.toString(pitch));
+                SystemClock.sleep(50);
             }
         }
     }
