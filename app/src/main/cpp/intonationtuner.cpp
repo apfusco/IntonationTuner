@@ -217,7 +217,7 @@ Java_ece_wisc_intonationtuner_MainActivity_flwt(JNIEnv *env, jclass clazz, jfloa
                         free(a[j]);
                     }
                     last_freq = fs / mode[i - 1] / pow(2, (i-1));
-                    return last_freq;
+                    return last_freq * 2;
                 }
             }
         }
