@@ -1,5 +1,6 @@
 package ece.wisc.intonationtuner;
 
+import static java.lang.Math.*;
 import static ece.wisc.intonationtuner.MainActivity.flwt;
 
 import android.Manifest;
@@ -15,12 +16,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.concurrent.Executor;
 
@@ -34,7 +37,9 @@ public class SecondFragment extends Fragment {
     private AudioProcessingThread audioProcessingThread = new AudioProcessingThread();
 
     private Thread myThread;
+    //private TextView myTextViewNote;
     private Executor myExecutor;
+    private AudioProcessingThread myAudioThread;
 
     @Override
     public View onCreateView(
@@ -43,6 +48,7 @@ public class SecondFragment extends Fragment {
     ) {
 
         binding = FragmentSecondBinding.inflate(inflater, container, false);
+        //binding.textviewSecond.setText("Test");
         return binding.getRoot();
 
     }
@@ -81,15 +87,11 @@ public class SecondFragment extends Fragment {
         Toast.makeText(getActivity().getApplicationContext(), "Recording Started",
                 Toast.LENGTH_LONG).show();
 
-        /*myExecutor = new Executor() {
-            @Override
-            public void execute(Runnable command) {
-                command.run();
-            }
-        };
-        myExecutor.execute(new AudioProcessingThread());*/
+        myAudioThread = new AudioProcessingThread();
+        //binding.textviewSecond.post(myAudioThread);
         myThread = new Thread(new AudioProcessingThread());
         myThread.start();
+
 
     }
 
@@ -99,13 +101,14 @@ public class SecondFragment extends Fragment {
 
         if (myAudioRecorder != null) {
             myAudioRecorder.stop();
-            while (myThread.isAlive()) {
+            /*while (myThread.isAlive()) {
                 try {
                     myThread.join();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-            }
+            }*/
+            binding.textviewSecond.removeCallbacks(myAudioThread);
             myAudioRecorder.release();
             myAudioRecorder = null;
         }
@@ -116,6 +119,17 @@ public class SecondFragment extends Fragment {
 
         Toast.makeText(getActivity().getApplicationContext(), "Recording Stopped",
                 Toast.LENGTH_LONG).show();
+    }
+
+    private static String getNote(int freq) {
+        int a4 = 440;
+        double c0 = a4 * Math.pow(2, -4.75);
+        final String[] name = {"c", "c#", "d", "d#", "e", "f", "f#", "g", "g#", "a", "a#", "b"};
+
+        int h = (int)Math.round(12 * Math.log10(freq / c0) / Math.log10(2));
+        int octave = h / 12;
+        int n = h % 12;
+        return name[n] + Integer.toString(octave);
     }
 
     class AudioProcessingThread implements Runnable {
@@ -129,6 +143,24 @@ public class SecondFragment extends Fragment {
                 myAudioRecorder.read(audioData, 0 , 1024, AudioRecord.READ_BLOCKING);
                 float pitch = flwt(audioData);
                 Log.e("TEST", "Pitch: " + Float.toString(pitch));
+
+                if (pitch != 0.0) {
+                    //binding.textviewSecond.setText(getNote(Math.round(pitch)));
+                    binding.textviewSecond.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            binding.textviewSecond.setText(getNote(Math.round(pitch)));
+                        }
+                    });
+                } else {
+                    //binding.textviewSecond.setText("Play a note");
+                    binding.textviewSecond.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            binding.textviewSecond.setText(R.string.play_note);
+                        }
+                    });
+                }
                 SystemClock.sleep(50);
             }
         }
