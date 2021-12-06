@@ -36,28 +36,11 @@ public class FirstFragment extends Fragment {
         binding.buttonFirst.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //binding.keySpinner.getSelectedItem();
                 NavHostFragment.findNavController(FirstFragment.this)
                         .navigate(R.id.action_FirstFragment_to_SecondFragment);
             }
         });
-        //binding.keySpinner.setOnItemClickListener(this);
-        List<String> keys = new ArrayList<String>();
-        keys.add("c");
-        keys.add("c#");
-        keys.add("d");
-        keys.add("d#");
-        keys.add("e");
-        keys.add("f");
-        keys.add("f#");
-        keys.add("g");
-        keys.add("g#");
-        keys.add("a");
-        keys.add("a#");
-        keys.add("b");
-        keys.add("Equal Temperament");
-
-        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(getContext(), R.layout.support_simple_spinner_dropdown_item, keys);
-        binding.keySpinner.setAdapter(dataAdapter);
     }
 
     @Override

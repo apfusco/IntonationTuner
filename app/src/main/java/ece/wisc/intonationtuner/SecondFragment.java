@@ -1,6 +1,5 @@
 package ece.wisc.intonationtuner;
 
-import static java.lang.Math.*;
 import static ece.wisc.intonationtuner.MainActivity.flwt;
 
 import android.Manifest;
@@ -9,24 +8,22 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.SystemClock;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
-import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.concurrent.Executor;
+import java.util.List;
 
 import ece.wisc.intonationtuner.databinding.FragmentSecondBinding;
 
@@ -37,6 +34,10 @@ public class SecondFragment extends Fragment {
     private AudioRecord myAudioRecorder;
 
     private Thread myThread;
+
+    private static final String[] names = {"c", "c#", "d", "d#", "e", "f", "f#", "g", "g#", "a", "a#", "b"};
+    private static final double[] pitches = {32.705, 34.65, 36.71, 38.89, 41.205, 43.655, 46.25, 49.0, 51.915, 55.0, 58.27, 61.74};
+    private static final double[] ratios = {1, 25.0/24, 9.0/8, 6.0/5, 5.0/4, 4.0/3, 45.0/32, 3.0/2, 8.0/5, 5.0/3, 9.0/5, 15.0/8};
 
     @Override
     public View onCreateView(
@@ -60,6 +61,26 @@ public class SecondFragment extends Fragment {
                         .navigate(R.id.action_SecondFragment_to_FirstFragment);
             }
         });
+        List<String> keys = new ArrayList<String>();
+        for (int i = 0; i < names.length; i++) {
+            keys.add(names[i]);
+        }
+        /*keys.add("c");
+        keys.add("c#");
+        keys.add("d");
+        keys.add("d#");
+        keys.add("e");
+        keys.add("f");
+        keys.add("f#");
+        keys.add("g");
+        keys.add("g#");
+        keys.add("a");
+        keys.add("a#");
+        keys.add("b");*/
+        keys.add("Equal Temperament");
+
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(getContext(), R.layout.support_simple_spinner_dropdown_item, keys);
+        binding.keySpinner.setAdapter(dataAdapter);
 
         Log.e("TEST", "TESTLOG");
 
@@ -118,8 +139,6 @@ public class SecondFragment extends Fragment {
 
     private static int getPitch(String note) {
         final int a4 = 440;
-        final String[] name = {"c", "c#", "d", "d#", "e", "f", "f#", "g", "g#", "a", "a#", "b"};
-        final double[] pitches = {32.705, 34.65, 36.71, 38.89, 41.205, 43.655, 46.25, 49.0, 51.915, 55.0, 58.27, 61.74};
         String noteName;
         int octave, n;
         boolean sharp;
@@ -133,7 +152,7 @@ public class SecondFragment extends Fragment {
             noteName = note.substring(0, 1);
             octave = Integer.parseInt(note.substring(1));
         }
-        n = Arrays.asList(name).indexOf(noteName);
+        n = Arrays.asList(names).indexOf(noteName);
 
         return (int) (pitches[n] * Math.pow(2, octave - 1));
     }
@@ -141,12 +160,11 @@ public class SecondFragment extends Fragment {
     private static String getNote(int freq) {
         final int a4 = 440;
         double c0 = a4 * Math.pow(2, -4.75);
-        final String[] name = {"c", "c#", "d", "d#", "e", "f", "f#", "g", "g#", "a", "a#", "b"};
 
         int h = (int)Math.round(12 * Math.log10(freq / c0) / Math.log10(2));
         int octave = h / 12;
         int n = h % 12;
-        return name[n] + Integer.toString(octave);
+        return names[n] + Integer.toString(octave);
     }
 
     class AudioProcessingThread implements Runnable {
@@ -166,10 +184,39 @@ public class SecondFragment extends Fragment {
                     binding.textviewSecond.post(new Runnable() {
                         @Override
                         public void run() {
+                            int expct_pitch = 0;
                             String note = getNote(Math.round(pitch));
                             if (binding != null) {
                                 binding.textviewSecond.setText(note);
-                                binding.textviewSecond2.setText(Integer.toString(getPitch(note) - Math.round(pitch)));
+                                if (binding.keySpinner.getSelectedItem().equals("Equal Temperament")) {
+                                    binding.textviewSecond2.setText(Integer.toString(getPitch(note) - Math.round(pitch)));
+                                } else {
+                                    int n;
+                                    if (note.charAt(1) == '#') {
+                                        n = Arrays.asList(names).indexOf(note.substring(0, 2)) - Arrays.asList(names).indexOf((String)binding.keySpinner.getSelectedItem());
+                                    } else {
+                                        n = Arrays.asList(names).indexOf(note.substring(0, 1)) - Arrays.asList(names).indexOf((String)binding.keySpinner.getSelectedItem());
+                                    }
+                                    int octave;
+                                    int root_pitch;
+
+                                    if (note.charAt(1) == '#') {
+                                        octave = Integer.parseInt(note.substring(2));
+                                    } else {
+                                        octave = Integer.parseInt(note.substring(1));
+                                    }
+
+                                    if (n < 0) {
+                                        n = names.length + n;
+                                        octave--;
+                                    }
+                                    //n %= names.length;
+
+                                    root_pitch = getPitch(((String)binding.keySpinner.getSelectedItem()) + Integer.toString(octave));
+                                    expct_pitch = (int)Math.round((double)root_pitch * 1.0 * ratios[n]);
+                                    binding.textviewSecond2.setText(Integer.toString(expct_pitch - Math.round(pitch)));
+                                    //binding.textviewSecond2.setText(Integer.toString(expct_pitch) + " " + Integer.toString(Math.round(getPitch(note))) + " " + Integer.toString(Math.round(pitch)));
+                                }
                             }
                         }
                     });
