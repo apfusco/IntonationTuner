@@ -25,6 +25,7 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.Arrays;
 import java.util.concurrent.Executor;
 
 import ece.wisc.intonationtuner.databinding.FragmentSecondBinding;
@@ -121,8 +122,30 @@ public class SecondFragment extends Fragment {
                 Toast.LENGTH_LONG).show();
     }
 
+    private static int getPitch(String note) {
+        final int a4 = 440;
+        final String[] name = {"c", "c#", "d", "d#", "e", "f", "f#", "g", "g#", "a", "a#", "b"};
+        final double[] pitches = {32.705, 34.65, 36.71, 38.89, 41.205, 43.655, 46.25, 49.0, 51.915, 55.0, 58.27, 61.74};
+        String noteName;
+        int octave, n;
+        boolean sharp;
+
+        if (note.charAt(1) == '#') {
+            sharp = true;
+            noteName = note.substring(0, 2);
+            octave = Integer.parseInt(note.substring(2));
+        } else {
+            sharp = false;
+            noteName = note.substring(0, 1);
+            octave = Integer.parseInt(note.substring(1));
+        }
+        n = Arrays.asList(name).indexOf(noteName);
+
+        return (int) (pitches[n] * Math.pow(2, octave - 1));
+    }
+
     private static String getNote(int freq) {
-        int a4 = 440;
+        final int a4 = 440;
         double c0 = a4 * Math.pow(2, -4.75);
         final String[] name = {"c", "c#", "d", "d#", "e", "f", "f#", "g", "g#", "a", "a#", "b"};
 
@@ -149,7 +172,9 @@ public class SecondFragment extends Fragment {
                     binding.textviewSecond.post(new Runnable() {
                         @Override
                         public void run() {
-                            binding.textviewSecond.setText(getNote(Math.round(pitch)));
+                            String note = getNote(Math.round(pitch));
+                            binding.textviewSecond.setText(note);
+                            binding.textviewSecond2.setText(Integer.toString(getPitch(note) - Math.round(pitch)));
                         }
                     });
                 } else {
@@ -158,6 +183,7 @@ public class SecondFragment extends Fragment {
                         @Override
                         public void run() {
                             binding.textviewSecond.setText(R.string.play_note);
+                            binding.textviewSecond2.setText(R.string.no_pitch);
                         }
                     });
                 }
