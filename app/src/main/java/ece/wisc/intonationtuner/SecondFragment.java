@@ -35,12 +35,8 @@ public class SecondFragment extends Fragment {
     private FragmentSecondBinding binding;
 
     private AudioRecord myAudioRecorder;
-    private AudioProcessingThread audioProcessingThread = new AudioProcessingThread();
 
     private Thread myThread;
-    //private TextView myTextViewNote;
-    private Executor myExecutor;
-    private AudioProcessingThread myAudioThread;
 
     @Override
     public View onCreateView(
@@ -88,8 +84,6 @@ public class SecondFragment extends Fragment {
         Toast.makeText(getActivity().getApplicationContext(), "Recording Started",
                 Toast.LENGTH_LONG).show();
 
-        myAudioThread = new AudioProcessingThread();
-        //binding.textviewSecond.post(myAudioThread);
         myThread = new Thread(new AudioProcessingThread());
         myThread.start();
 
@@ -102,14 +96,14 @@ public class SecondFragment extends Fragment {
 
         if (myAudioRecorder != null) {
             myAudioRecorder.stop();
-            /*while (myThread.isAlive()) {
+            while (myThread.isAlive()) {
                 try {
                     myThread.join();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-            }*/
-            binding.textviewSecond.removeCallbacks(myAudioThread);
+            }
+            //binding.textviewSecond.removeCallbacks(myAudioThread);
             myAudioRecorder.release();
             myAudioRecorder = null;
         }
@@ -173,8 +167,10 @@ public class SecondFragment extends Fragment {
                         @Override
                         public void run() {
                             String note = getNote(Math.round(pitch));
-                            binding.textviewSecond.setText(note);
-                            binding.textviewSecond2.setText(Integer.toString(getPitch(note) - Math.round(pitch)));
+                            if (binding != null) {
+                                binding.textviewSecond.setText(note);
+                                binding.textviewSecond2.setText(Integer.toString(getPitch(note) - Math.round(pitch)));
+                            }
                         }
                     });
                 } else {
@@ -182,8 +178,10 @@ public class SecondFragment extends Fragment {
                     binding.textviewSecond.post(new Runnable() {
                         @Override
                         public void run() {
-                            binding.textviewSecond.setText(R.string.play_note);
-                            binding.textviewSecond2.setText(R.string.no_pitch);
+                            if (binding != null) {
+                                binding.textviewSecond.setText(R.string.play_note);
+                                binding.textviewSecond2.setText(R.string.no_pitch);
+                            }
                         }
                     });
                 }
