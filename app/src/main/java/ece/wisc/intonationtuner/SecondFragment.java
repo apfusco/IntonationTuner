@@ -232,7 +232,7 @@ public class SecondFragment extends Fragment {
                         }
                     });
                 }
-                SystemClock.sleep(50);
+                SystemClock.sleep(25);
             }
         }
     }

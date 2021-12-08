@@ -11,4 +11,7 @@
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="play_note">Play a note</string>
     <string name="no_pitch">0</string>
+    <string name="intonation_tuner">Intonation Tuner</string>
+    <string name="tune">Tune</string>
+    <string name="go_back">Go Back</string>
 </resources>
